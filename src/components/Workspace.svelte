@@ -1,34 +1,33 @@
 <script>
 export let templateString
 
-let index = 0
-
-$: line = ~~(index / 80)
-$: column = (index % 80)
-$: selectedChars = templateString[index]
+let line = 0
+let column = 0
+$: templateArray = templateString.split('\n')
+$: currentLine = templateArray[line]
+$: selectedChars = templateArray[line][column]
+$: cursorStyle = `top: ${line + ~~(column / 80)}em; left: ${column % 80}ch;`
 
 const handleKeypress = (event) => {
-  console.log(event)
   switch (event.key) {
     case 'h': {
-      if (index === 0) return
-      index -= 1
+      column = Math.max(0, column - 1)
       break
     }
     case 'l': {
-      if (index>=templateString.length-1) return
-      index+=1;
-      break;
+      column = Math.min(column + 1, currentLine.length - 1)
+      break
     }
     case 'j': {
-      if (index>=templateString.length-1) return
-      index = Math.min(index+80, templateString.length-1)
+      line = Math.min(line + 1, templateArray.length - 1)
       break
     }
     case 'k': {
-      if (index === 0) return
-      index = Math.max(index-80, 0)
+      line = Math.max(0, line - 1)
       break
+    }
+    case 'w': {
+      let cur = templateArray[line]
     }
   }
 }
@@ -38,7 +37,7 @@ const handleKeypress = (event) => {
 
 <div class="workspace">
   <pre class="template-string">{templateString}</pre>
-  <code class="cursor" style="top: {line}em; left: {column}ch;">{selectedChars}</code>
+  <code class="cursor" data-testid="cursor" style={cursorStyle}>{selectedChars}</code>
 </div>
 
 <style lang="stylus">
@@ -51,6 +50,7 @@ const handleKeypress = (event) => {
     height: 10em;
     line-height: 1;
     white-space: pre-line;
+    word-break break-all
     background-color: var(--background-color);
     color: var(--text-color);
 
